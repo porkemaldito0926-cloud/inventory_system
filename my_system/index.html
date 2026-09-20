@@ -1,1353 +1,2476 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Management System</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory Management Dashboard</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f0f2f5;
-        }
+<style>
+/* =========================================================
+   RESET
+========================================================= */
 
-        .box {
-            background: white;
-            padding: 20px;
-            max-width: 400px;
-            margin: 0 auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        .hidden {
-            display: none !important;
-        }
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #3730a3;
+    --secondary: #6366f1;
 
-        input, button, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            box-sizing: border-box;
-        }
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
 
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 4px;
-        }
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
 
-        button:hover {
-            opacity: 0.9;
-        }
+    --sidebar: #111827;
+    --sidebar-hover: #1f2937;
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-        }
+    --shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+}
 
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
+body.dark {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --border: #334155;
 
-        th {
-            background-color: #f8f9fa;
-        }
+    --sidebar: #020617;
+    --sidebar-hover: #1e293b;
+}
 
-        .action-btns {
-            display: flex;
-            gap: 5px;
-        }
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: 0.3s;
+}
 
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            border-radius: 4px;
-            width: auto;
-            margin-top: 0;
-        }
+button,
+input,
+select {
+    font-family: inherit;
+}
 
-        .btn-edit {
-            background-color: #ffc107;
-            color: #212529;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            border-radius: 4px;
-            width: auto;
-            margin-top: 0;
-        }
+button {
+    cursor: pointer;
+}
 
-        #diagnosticTerminal {
-            background-color: #1e1e1e;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            padding: 10px;
-            margin-top: 25px;
-            border-radius: 4px;
-            border: 1px solid #333;
-            overflow-x: auto;
-            text-align: left;
-        }
+/* =========================================================
+   AUTH
+========================================================= */
 
-        .diag-err {
-            color: #ff3333;
-            font-weight: bold;
-        }
+.auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 
-        .diag-success {
-            color: #33ff33;
-        }
+    background:
+        radial-gradient(circle at top left, #6366f1 0%, transparent 35%),
+        radial-gradient(circle at bottom right, #4f46e5 0%, transparent 35%),
+        #111827;
+}
 
-        .low-stock {
-            background-color: #f8d7da !important;
-            color: #721c24;
-            font-weight: bold;
-        }
+.auth-card {
+    width: 100%;
+    max-width: 430px;
+    background: white;
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.25);
+}
 
-        .badge-alert {
-            background: #dc3545;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            margin-left: 5px;
-            display: inline-block;
-        }
+.auth-logo {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    font-size: 32px;
+    margin: 0 auto 20px;
+}
 
-        .search-bar {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+.auth-card h1 {
+    text-align: center;
+    margin-bottom: 8px;
+    color: #111827;
+}
 
-        .dashboard {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+.auth-subtitle {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 25px;
+}
 
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+.form-group {
+    margin-bottom: 16px;
+}
 
-        .dashboard-header button {
-            width: auto;
-            margin-top: 0;
-            padding: 10px 20px;
-            background-color: #6c757d;
-        }
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 7px;
+    color: #374151;
+}
 
-        .dashboard-content {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-            align-items: flex-start;
-        }
+.form-control {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    outline: none;
+    transition: 0.2s;
+}
 
-        .admin-panel {
-            width: 300px;
-            flex-shrink: 0;
-            margin: 0;
-        }
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+}
 
-        .inventory-panel {
-            flex: 1;
-            min-width: 0;
-        }
+.btn {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-weight: bold;
+    transition: 0.2s;
+}
 
-        .message {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 4px;
-            display: none;
-        }
+.btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
 
-        .success-message {
-            display: block;
-            background: #d4edda;
-            color: #155724;
-        }
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
 
-        .error-message {
-            display: block;
-            background: #f8d7da;
-            color: #721c24;
-        }
+.btn-success {
+    background: var(--success);
+    color: white;
+}
 
-        @media (max-width: 700px) {
-            .dashboard-content {
-                flex-direction: column;
-            }
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
 
-            .admin-panel {
-                width: 100%;
-            }
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
 
-            .inventory-panel {
-                width: 100%;
-            }
-        }
-    </style>
+.btn-secondary {
+    background: #64748b;
+    color: white;
+}
+
+.full-btn {
+    width: 100%;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 18px;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.message {
+    padding: 11px 13px;
+    border-radius: 9px;
+    margin-top: 15px;
+    display: none;
+    font-size: 14px;
+}
+
+.message.show {
+    display: block;
+}
+
+.message.success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.message.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* =========================================================
+   DASHBOARD LAYOUT
+========================================================= */
+
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background: var(--sidebar);
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    padding: 22px 15px;
+    z-index: 20;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px 25px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-menu {
+    margin-top: 10px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    color: #cbd5e1;
+    cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item.active {
+    background: var(--sidebar-hover);
+    color: white;
+}
+
+.sidebar-user {
+    position: absolute;
+    bottom: 20px;
+    left: 15px;
+    right: 15px;
+    background: #1e293b;
+    padding: 13px;
+    border-radius: 12px;
+}
+
+.user-email {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 5px;
+    word-break: break-word;
+}
+
+.main {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    padding: 25px;
+}
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.page-title h1 {
+    font-size: 26px;
+    margin-bottom: 5px;
+}
+
+.page-title p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.datetime {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    font-size: 13px;
+}
+
+.datetime strong {
+    display: block;
+    color: var(--primary);
+    margin-top: 3px;
+}
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+}
+
+.icon-blue {
+    background: #dbeafe;
+}
+
+.icon-green {
+    background: #d1fae5;
+}
+
+.icon-orange {
+    background: #fef3c7;
+}
+
+.icon-red {
+    background: #fee2e2;
+}
+
+.stat-title {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.stat-number {
+    font-size: 27px;
+    font-weight: bold;
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 330px 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.card-header h2 {
+    font-size: 17px;
+}
+
+/* =========================================================
+   ADD PRODUCT
+========================================================= */
+
+.product-form .form-group {
+    margin-bottom: 13px;
+}
+
+.product-form .btn {
+    margin-top: 5px;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.inventory-toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.search {
+    flex: 1;
+    min-width: 180px;
+}
+
+.search input {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+}
+
+.filter-select {
+    padding: 11px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 13px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+td {
+    font-size: 14px;
+}
+
+tr:hover {
+    background: rgba(99,102,241,0.04);
+}
+
+.low-stock-row {
+    background: rgba(239,68,68,0.07);
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.badge-success {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-danger {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-category {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.actions {
+    display: flex;
+    gap: 5px;
+}
+
+.small-btn {
+    border: none;
+    border-radius: 7px;
+    padding: 7px 9px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.edit-btn {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.delete-btn {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* =========================================================
+   BOTTOM CARDS
+========================================================= */
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.activity-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.activity {
+    display: flex;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.activity-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+}
+
+.activity-text {
+    font-size: 13px;
+}
+
+.activity-time {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+.alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 10px;
+    background: #fff7ed;
+    border-left: 4px solid var(--warning);
+    color: #92400e;
+    font-size: 13px;
+}
+
+.no-alert {
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 450px;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--muted);
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+.mobile-menu {
+    display: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media(max-width:1100px) {
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media(max-width:800px) {
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: 0.3s;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 18px;
+    }
+
+    .mobile-menu {
+        display: block;
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 13px;
+        border-radius: 9px;
+    }
+
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media(max-width:550px) {
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-card {
+        padding: 25px 20px;
+    }
+
+    .datetime {
+        width: 100%;
+    }
+
+    .top-actions {
+        width: 100%;
+    }
+
+}
+</style>
 </head>
 
 <body>
 
-    <!-- LOGIN / REGISTRATION -->
-    <div id="authScreen" class="box">
+<!-- =========================================================
+     LOGIN
+========================================================= -->
 
-        <h2 id="formTitle">🔐 System Login</h2>
+<section id="authScreen" class="auth-screen">
 
-        <input
-            type="email"
-            id="userEmail"
-            placeholder="Email (admin@system.com)"
-            autocomplete="email"
-        >
+    <div class="auth-card">
 
-        <input
-            type="password"
-            id="userPassword"
-            placeholder="Password (password123)"
-            autocomplete="current-password"
-        > <form action="/register-endpoint" method="POST">
+        <div class="auth-logo">📦</div>
+
+        <h1 id="authTitle">Inventory Manager</h1>
+
+        <p class="auth-subtitle" id="authSubtitle">
+            Sign in to access your dashboard
+        </p>
+
         <div class="form-group">
-           
-            <div id="restriction-msg" class="disabled-note">"</div>
+
+            <label>Email Address</label>
+
+            <input
+                class="form-control"
+                type="email"
+                id="userEmail"
+                placeholder="admin@system.com"
+                autocomplete="email"
+            >
+
         </div>
 
-        <button type="submit">Submit Registration</button>
-    </form>
+        <div class="form-group">
 
-        <select id="userRole" class="hidden">
-            <option value="admin">Administrator (Full Control)</option>
-            <option value="user">Standard User (Read-Only)</option>
+            <label>Password</label>
 
-        </select>
-        <button id="mainBtn" type="button">Sign In</button>
+            <input
+                class="form-control"
+                type="password"
+                id="userPassword"
+                placeholder="password123"
+                autocomplete="current-password"
+            >
 
-        <p
-            id="toggleLink"
-            style="text-align:center; font-size:14px; margin-top:15px; cursor:pointer; color:#007bff;"
+        </div>
+
+        <div class="form-group hidden" id="roleGroup">
+
+            <label>Account Role</label>
+
+            <select class="form-control" id="userRole">
+
+                <option value="user">
+                    Standard User
+                </option>
+
+                <option value="admin">
+                    Administrator
+                </option>
+
+            </select>
+
+        </div>
+
+        <button
+            class="btn btn-primary full-btn"
+            id="mainBtn"
+            type="button"
         >
-            Don't have an account? Register here
-        </p>
+            Sign In
+        </button>
+
+        <div
+            class="auth-switch"
+            id="toggleLink"
+        >
+            Don't have an account? Register
+        </div>
 
         <div id="authMessage" class="message"></div>
 
-      
-            </div>
+        <div style="
+            margin-top:20px;
+            padding:12px;
+            background:#f3f4f6;
+            border-radius:10px;
+            font-size:12px;
+            color:#6b7280;
+            text-align:center;
+        ">
+            Demo Admin:<br>
+            <strong>admin@system.com</strong><br>
+            Password: <strong>password123</strong>
         </div>
 
     </div>
 
+</section>
 
-    <!-- DASHBOARD -->
-    <div id="dashboardScreen" class="hidden dashboard">
 
-        <div class="dashboard-header">
-            <div>
-                <h2>📦 Inventory Management System</h2>
-                <p>
-                    Active User:
-                    <strong id="userDisplay">None</strong>
-                </p>
-            </div>
+<!-- =========================================================
+     DASHBOARD
+========================================================= -->
 
-            <button id="logoutBtn" type="button">
-                Logout
-            </button>
+<section id="dashboardScreen" class="dashboard hidden">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icon">📦</div>
+
+            <span>StockMaster</span>
+
         </div>
 
+        <div class="sidebar-menu">
 
-        <div class="dashboard-content">
+            <div class="menu-item active">
+                📊
+                <span>Dashboard</span>
+            </div>
 
-            <!-- ADMIN CONTROLS -->
-            <div class="box admin-panel" id="adminControls">
+            <div class="menu-item" id="inventoryMenu">
+                📦
+                <span>Inventory</span>
+            </div>
 
-                <h3>Add New Product</h3>
+            <div class="menu-item">
+                📈
+                <span>Reports</span>
+            </div>
 
-                <input
-                    type="text"
-                    id="prodName"
-                    placeholder="Product Name"
+            <div class="menu-item">
+                🔔
+                <span>Notifications</span>
+            </div>
+
+            <div class="menu-item" id="themeBtn">
+                🌙
+                <span>Dark Mode</span>
+            </div>
+
+        </div>
+
+        <div class="sidebar-user">
+
+            <strong id="sidebarUser">
+                User
+            </strong>
+
+            <div
+                class="user-email"
+                id="sidebarRole"
+            >
+                Standard User
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div class="page-title">
+
+                <div style="display:flex;align-items:center;gap:10px;">
+
+                    <button
+                        class="mobile-menu"
+                        id="mobileMenu"
+                    >
+                        ☰
+                    </button>
+
+                    <div>
+
+                        <h1>Dashboard</h1>
+
+                        <p>
+                            Welcome back to your inventory system.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="top-actions">
+
+                <div class="datetime">
+
+                    <span id="currentDate">
+                        Loading date...
+                    </span>
+
+                    <strong id="currentTime">
+                        Loading time...
+                    </strong>
+
+                </div>
+
+                <button
+                    class="btn btn-secondary"
+                    id="logoutBtn"
                 >
-
-                <input
-                    type="number"
-                    id="prodQty"
-                    placeholder="Quantity"
-                    min="0"
-                >
-
-                <button id="addProductBtn" type="button">
-                    Add to List
+                    Logout
                 </button>
 
-                <div id="productMessage" class="message"></div>
+            </div>
+
+        </header>
+
+
+        <!-- STATISTICS -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <div>
+
+                    <div class="stat-title">
+                        Total Products
+                    </div>
+
+                    <div
+                        class="stat-number"
+                        id="totalProducts"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div class="stat-icon icon-blue">
+                    📦
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div>
+
+                    <div class="stat-title">
+                        Total Stock
+                    </div>
+
+                    <div
+                        class="stat-number"
+                        id="totalStock"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div class="stat-icon icon-green">
+                    📊
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div>
+
+                    <div class="stat-title">
+                        Low Stock
+                    </div>
+
+                    <div
+                        class="stat-number"
+                        id="lowStockCount"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div class="stat-icon icon-orange">
+                    ⚠️
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div>
+
+                    <div class="stat-title">
+                        Out of Stock
+                    </div>
+
+                    <div
+                        class="stat-number"
+                        id="outStockCount"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+                <div class="stat-icon icon-red">
+                    🚨
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- MAIN CONTENT -->
+
+        <section class="content-grid">
+
+            <!-- ADD PRODUCT -->
+
+            <div
+                class="card"
+                id="adminControls"
+            >
+
+                <div class="card-header">
+
+                    <h2>➕ Add Product</h2>
+
+                </div>
+
+                <div class="product-form">
+
+                    <div class="form-group">
+
+                        <label>Product Name</label>
+
+                        <input
+                            class="form-control"
+                            id="prodName"
+                            placeholder="Example: Laptop"
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>SKU / Product Code</label>
+
+                        <input
+                            class="form-control"
+                            id="prodSKU"
+                            placeholder="Example: LAP-001"
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Category</label>
+
+                        <select
+                            class="form-control"
+                            id="prodCategory"
+                        >
+
+                            <option value="Electronics">
+                                Electronics
+                            </option>
+
+                            <option value="Office">
+                                Office
+                            </option>
+
+                            <option value="Furniture">
+                                Furniture
+                            </option>
+
+                            <option value="Clothing">
+                                Clothing
+                            </option>
+
+                            <option value="Food">
+                                Food
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Quantity</label>
+
+                        <input
+                            class="form-control"
+                            type="number"
+                            id="prodQty"
+                            min="0"
+                            placeholder="0"
+                        >
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Low Stock Limit</label>
+
+                        <input
+                            class="form-control"
+                            type="number"
+                            id="prodLimit"
+                            min="0"
+                            value="5"
+                        >
+
+                    </div>
+
+                    <button
+                        class="btn btn-primary full-btn"
+                        id="addProductBtn"
+                    >
+                        Add Product
+                    </button>
+
+                    <div
+                        id="productMessage"
+                        class="message"
+                    ></div>
+
+                </div>
 
             </div>
 
 
             <!-- INVENTORY -->
-            <div class="inventory-panel">
 
-                <h3>Current Inventory</h3>
+            <div class="card" id="inventorySection">
 
-                <input
-                    type="text"
-                    id="searchInput"
-                    class="search-bar"
-                    placeholder="🔍 Search products by name..."
-                >
+                <div class="card-header">
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Quantity</th>
-                            <th id="actionsHeader">Actions</th>
-                        </tr>
-                    </thead>
+                    <h2>📦 Inventory</h2>
 
-                    <tbody id="inventoryTable"></tbody>
-                </table>
+                    <button
+                        class="btn btn-success"
+                        id="exportBtn"
+                    >
+                        📥 Export CSV
+                    </button>
+
+                </div>
+
+
+                <div class="inventory-toolbar">
+
+                    <div class="search">
+
+                        <input
+                            id="searchInput"
+                            placeholder="🔍 Search products..."
+                        >
+
+                    </div>
+
+                    <select
+                        id="categoryFilter"
+                        class="filter-select"
+                    >
+
+                        <option value="all">
+                            All Categories
+                        </option>
+
+                        <option value="Electronics">
+                            Electronics
+                        </option>
+
+                        <option value="Office">
+                            Office
+                        </option>
+
+                        <option value="Furniture">
+                            Furniture
+                        </option>
+
+                        <option value="Clothing">
+                            Clothing
+                        </option>
+
+                        <option value="Food">
+                            Food
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Product</th>
+
+                                <th>SKU</th>
+
+                                <th>Category</th>
+
+                                <th>Quantity</th>
+
+                                <th>Status</th>
+
+                                <th>Added</th>
+
+                                <th>Actions</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="inventoryTable"></tbody>
+
+                    </table>
+
+                </div>
 
             </div>
 
+        </section>
+
+
+        <!-- BOTTOM -->
+
+        <section class="bottom-grid">
+
+            <!-- ACTIVITY -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>🕐 Recent Activity</h2>
+
+                </div>
+
+                <div
+                    class="activity-list"
+                    id="activityList"
+                ></div>
+
+            </div>
+
+
+            <!-- ALERTS -->
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h2>🔔 Stock Alerts</h2>
+
+                </div>
+
+                <div
+                    class="alert-list"
+                    id="alertList"
+                ></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</section>
+
+
+<!-- =========================================================
+     EDIT MODAL
+========================================================= -->
+
+<div class="modal" id="editModal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Edit Product</h2>
+
+            <button
+                class="close-modal"
+                id="closeModal"
+            >
+                ×
+            </button>
+
         </div>
+
+        <div class="form-group">
+
+            <label>Product Name</label>
+
+            <input
+                class="form-control"
+                id="editName"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label>SKU</label>
+
+            <input
+                class="form-control"
+                id="editSKU"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Category</label>
+
+            <select
+                class="form-control"
+                id="editCategory"
+            >
+
+                <option>Electronics</option>
+                <option>Office</option>
+                <option>Furniture</option>
+                <option>Clothing</option>
+                <option>Food</option>
+                <option>Other</option>
+
+            </select>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Quantity</label>
+
+            <input
+                class="form-control"
+                type="number"
+                id="editQty"
+                min="0"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Low Stock Limit</label>
+
+            <input
+                class="form-control"
+                type="number"
+                id="editLimit"
+                min="0"
+            >
+
+        </div>
+
+        <button
+            class="btn btn-primary full-btn"
+            id="saveEditBtn"
+        >
+            Save Changes
+        </button>
 
     </div>
 
-
-    <script>
-
-        /* =====================================================
-           DIAGNOSTIC SYSTEM
-        ===================================================== */
-
-        function appendLog(message, isError) {
-
-            var el = document.getElementById("logContent");
-
-            if (!el) {
-                return;
-            }
-
-            var cssClass = isError
-                ? "diag-err"
-                : "diag-success";
-
-            el.innerHTML +=
-                "<br><span class='" +
-                cssClass +
-                "'>" +
-                message +
-                "</span>";
-        }
+</div>
 
 
-        window.onerror = function(message, source, lineno) {
+<script>
 
-            appendLog(
-                "❌ RUNTIME ERROR: " +
-                message +
-                " (Line " +
-                lineno +
-                ")",
-                true
-            );
+/* =========================================================
+   DATA
+========================================================= */
 
-            return false;
-        };
+const defaultAccounts = [
+    {
+        email: "admin@system.com",
+        pass: "password123",
+        role: "admin"
+    }
+];
+
+let accounts =
+    JSON.parse(localStorage.getItem("accounts")) ||
+    defaultAccounts;
+
+let inventory =
+    JSON.parse(localStorage.getItem("inventory")) ||
+    [];
+
+let activities =
+    JSON.parse(localStorage.getItem("activities")) ||
+    [];
+
+let activeUser = null;
+let isRegisterMode = false;
+let editingId = null;
 
 
-        /* =====================================================
-           DATA
-        ===================================================== */
+/* =========================================================
+   STORAGE
+========================================================= */
 
-        var defaultAccounts = [
+function saveAccounts() {
+
+    localStorage.setItem(
+        "accounts",
+        JSON.stringify(accounts)
+    );
+}
+
+function saveInventory() {
+
+    localStorage.setItem(
+        "inventory",
+        JSON.stringify(inventory)
+    );
+}
+
+function saveActivities() {
+
+    localStorage.setItem(
+        "activities",
+        JSON.stringify(activities)
+    );
+}
+
+
+/* =========================================================
+   MESSAGES
+========================================================= */
+
+function showMessage(id, text, type) {
+
+    const element =
+        document.getElementById(id);
+
+    element.textContent = text;
+
+    element.className =
+        "message show " + type;
+
+    setTimeout(function() {
+
+        element.className = "message";
+
+    }, 3500);
+}
+
+
+/* =========================================================
+   DATE / TIME
+========================================================= */
+
+function updateDateTime() {
+
+    const now = new Date();
+
+    const date =
+        now.toLocaleDateString(
+            undefined,
             {
-                email: "admin@system.com",
-                pass: "password123",
-                role: "admin"
-            }
-        ];
-
-        var accounts =
-            JSON.parse(localStorage.getItem("accounts")) ||
-            defaultAccounts;
-
-        var inventory =
-            JSON.parse(localStorage.getItem("inventory")) ||
-            [];
-
-        var isRegisterMode = false;
-        var activeUser = null;
-
-
-        /* =====================================================
-           SAVE DATA
-        ===================================================== */
-
-        function saveAccounts() {
-
-            localStorage.setItem(
-                "accounts",
-                JSON.stringify(accounts)
-            );
-        }
-
-
-        function saveInventory() {
-
-            localStorage.setItem(
-                "inventory",
-                JSON.stringify(inventory)
-            );
-        }
-
-
-        /* =====================================================
-           MESSAGE SYSTEM
-        ===================================================== */
-
-        function showMessage(elementId, message, type) {
-
-            var element =
-                document.getElementById(elementId);
-
-            element.textContent = message;
-
-            element.className =
-                "message " +
-                (type === "success"
-                    ? "success-message"
-                    : "error-message");
-        }
-
-
-        function hideMessage(elementId) {
-
-            var element =
-                document.getElementById(elementId);
-
-            element.textContent = "";
-            element.className = "message";
-        }
-
-
-        /* =====================================================
-           LOGIN / REGISTER MODE
-        ===================================================== */
-
-        function switchToRegister() {
-
-            isRegisterMode = true;
-
-            document.getElementById("formTitle").innerText =
-                "📝 Registration";
-
-            document
-                .getElementById("userRole")
-                .classList.remove("hidden");
-
-            document.getElementById("mainBtn").innerText =
-                "Create Account";
-
-            document.getElementById("toggleLink").innerText =
-                "Back to Login";
-
-            document.getElementById("userPassword").value = "";
-
-            hideMessage("authMessage");
-
-            appendLog(
-                "🔄 Panel switched to REGISTER MODE.",
-                false
-            );
-        }
-
-
-        function switchToLogin() {
-
-            isRegisterMode = false;
-
-            document.getElementById("formTitle").innerText =
-                "🔐 System Login";
-
-            document
-                .getElementById("userRole")
-                .classList.add("hidden");
-
-            document.getElementById("mainBtn").innerText =
-                "Sign In";
-
-            document.getElementById("toggleLink").innerText =
-                "Don't have an account? Register here";
-
-            hideMessage("authMessage");
-
-            appendLog(
-                "🔄 Panel switched to LOGIN MODE.",
-                false
-            );
-        }
-
-
-        /* =====================================================
-           REGISTRATION
-        ===================================================== */
-
-        function handleRegister() {
-
-            appendLog(
-                "Processing registration...",
-                false
-            );
-
-            var em =
-                document
-                    .getElementById("userEmail")
-                    .value
-                    .toLowerCase()
-                    .trim();
-
-            var pa =
-                document
-                    .getElementById("userPassword")
-                    .value;
-
-            var ro =
-                document
-                    .getElementById("userRole")
-                    .value;
-
-
-            /* Validate email */
-
-            if (em === "") {
-
-                showMessage(
-                    "authMessage",
-                    "Please enter your email.",
-                    "error"
-                );
-
-                appendLog(
-                    "❌ Registration failed: email is empty.",
-                    true
-                );
-
-                return;
-            }
-
-
-            /* Validate password */
-
-            if (pa === "") {
-
-                showMessage(
-                    "authMessage",
-                    "Please enter a password.",
-                    "error"
-                );
-
-                appendLog(
-                    "❌ Registration failed: password is empty.",
-                    true
-                );
-
-                return;
-            }
-
-
-            /* Password length */
-
-            if (pa.length < 6) {
-
-                showMessage(
-                    "authMessage",
-                    "Password must contain at least 6 characters.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            /* Check duplicate */
-
-            var existing = accounts.find(function(account) {
-
-                return account.email === em;
-
-            });
-
-
-            if (existing) {
-
-                showMessage(
-                    "authMessage",
-                    "This email is already registered.",
-                    "error"
-                );
-
-                appendLog(
-                    "❌ Registration failed: email already exists.",
-                    true
-                );
-
-                return;
-            }
-
-
-            /* Create account */
-
-            accounts.push({
-                email: em,
-                pass: pa,
-                role: ro
-            });
-
-
-            saveAccounts();
-
-
-            appendLog(
-                "✅ Account successfully created.",
-                false
-            );
-
-
-            showMessage(
-                "authMessage",
-                "Account registered successfully! You can now log in.",
-                "success"
-            );
-
-
-            /* Clear fields */
-
-            document.getElementById("userEmail").value = "";
-            document.getElementById("userPassword").value = "";
-
-
-            /* Return to login */
-
-            switchToLogin();
-
-        }
-
-
-        /* =====================================================
-           LOGIN
-        ===================================================== */
-
-        function handleLogin() {
-
-            appendLog(
-                "Processing login credentials...",
-                false
-            );
-
-            var em =
-                document
-                    .getElementById("userEmail")
-                    .value
-                    .toLowerCase()
-                    .trim();
-
-            var pa =
-                document
-                    .getElementById("userPassword")
-                    .value;
-
-
-            if (em === "" || pa === "") {
-
-                showMessage(
-                    "authMessage",
-                    "Please enter both email and password.",
-                    "error"
-                );
-
-                appendLog(
-                    "❌ Login failed: missing credentials.",
-                    true
-                );
-
-                return;
-            }
-
-
-            var foundUser = null;
-
-
-            for (var i = 0; i < accounts.length; i++) {
-
-                if (
-                    accounts[i].email === em &&
-                    accounts[i].pass === pa
-                ) {
-
-                    foundUser = accounts[i];
-
-                    break;
-                }
-            }
-
-
-            if (foundUser === null) {
-
-                showMessage(
-                    "authMessage",
-                    "Invalid email or password.",
-                    "error"
-                );
-
-                appendLog(
-                    "❌ Login failed: invalid credentials.",
-                    true
-                );
-
-                return;
-            }
-
-
-            /* Login successful */
-
-            activeUser = foundUser;
-
-
-            document
-                .getElementById("authScreen")
-                .classList.add("hidden");
-
-
-            document
-                .getElementById("dashboardScreen")
-                .classList.remove("hidden");
-
-
-            document.getElementById("userDisplay").innerText =
-                activeUser.email +
-                " (" +
-                activeUser.role +
-                ")";
-
-
-            /* ADMIN */
-
-            if (activeUser.role === "admin") {
-
-                document
-                    .getElementById("adminControls")
-                    .classList.remove("hidden");
-
-                document
-                    .getElementById("actionsHeader")
-                    .classList.remove("hidden");
-
-            }
-
-
-            /* STANDARD USER */
-
-            else {
-
-                document
-                    .getElementById("adminControls")
-                    .classList.add("hidden");
-
-                document
-                    .getElementById("actionsHeader")
-                    .classList.add("hidden");
-            }
-
-
-            appendLog(
-                "✅ LOGIN SUCCESS: " +
-                activeUser.email,
-                false
-            );
-
-
-            renderInventory();
-
-        }
-
-
-        /* =====================================================
-           LOGOUT
-        ===================================================== */
-
-        function handleLogout() {
-
-            activeUser = null;
-
-
-            document
-                .getElementById("dashboardScreen")
-                .classList.add("hidden");
-
-
-            document
-                .getElementById("authScreen")
-                .classList.remove("hidden");
-
-
-            document.getElementById("userEmail").value = "";
-            document.getElementById("userPassword").value = "";
-
-
-            appendLog(
-                "🚪 User logged out successfully.",
-                false
-            );
-
-        }
-
-
-        /* =====================================================
-           ADD PRODUCT
-        ===================================================== */
-
-        function addProduct() {
-
-            if (!activeUser || activeUser.role !== "admin") {
-
-                showMessage(
-                    "productMessage",
-                    "Only administrators can add products.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            var name =
-                document
-                    .getElementById("prodName")
-                    .value
-                    .trim();
-
-            var quantity =
-                parseInt(
-                    document
-                        .getElementById("prodQty")
-                        .value,
-                    10
-                );
-
-
-            if (name === "") {
-
-                showMessage(
-                    "productMessage",
-                    "Please enter a product name.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            if (
-                isNaN(quantity) ||
-                quantity < 0
-            ) {
-
-                showMessage(
-                    "productMessage",
-                    "Please enter a valid quantity.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            inventory.push({
-                id: Date.now(),
-                name: name,
-                quantity: quantity
-            });
-
-
-            saveInventory();
-
-
-            document.getElementById("prodName").value = "";
-            document.getElementById("prodQty").value = "";
-
-
-            showMessage(
-                "productMessage",
-                "Product added successfully.",
-                "success"
-            );
-
-
-            appendLog(
-                "📦 Product added: " +
-                name +
-                " (" +
-                quantity +
-                ")",
-                false
-            );
-
-
-            renderInventory();
-
-        }
-
-
-        /* =====================================================
-           EDIT PRODUCT
-        ===================================================== */
-
-        function editProduct(id) {
-
-            if (!activeUser || activeUser.role !== "admin") {
-                return;
-            }
-
-
-            var product = inventory.find(function(item) {
-
-                return item.id === id;
-
-            });
-
-
-            if (!product) {
-                return;
-            }
-
-
-            var newName =
-                prompt(
-                    "Enter new product name:",
-                    product.name
-                );
-
-
-            if (newName === null) {
-                return;
-            }
-
-
-            newName = newName.trim();
-
-
-            if (newName === "") {
-
-                alert("Product name cannot be empty.");
-
-                return;
-            }
-
-
-            var newQuantity =
-                prompt(
-                    "Enter new quantity:",
-                    product.quantity
-                );
-
-
-            if (newQuantity === null) {
-                return;
-            }
-
-
-            newQuantity =
-                parseInt(newQuantity, 10);
-
-
-            if (
-                isNaN(newQuantity) ||
-                newQuantity < 0
-            ) {
-
-                alert("Invalid quantity.");
-
-                return;
-            }
-
-
-            product.name = newName;
-            product.quantity = newQuantity;
-
-
-            saveInventory();
-            renderInventory();
-
-
-            appendLog(
-                "✏️ Product updated: " +
-                newName,
-                false
-            );
-
-        }
-
-
-        /* =====================================================
-           DELETE PRODUCT
-        ===================================================== */
-
-        function deleteProduct(id) {
-
-            if (!activeUser || activeUser.role !== "admin") {
-                return;
-            }
-
-
-            var product =
-                inventory.find(function(item) {
-
-                    return item.id === id;
-
-                });
-
-
-            if (!product) {
-                return;
-            }
-
-
-            var confirmed =
-                confirm(
-                    "Delete " +
-                    product.name +
-                    "?"
-                );
-
-
-            if (!confirmed) {
-                return;
-            }
-
-
-            inventory =
-                inventory.filter(function(item) {
-
-                    return item.id !== id;
-
-                });
-
-
-            saveInventory();
-            renderInventory();
-
-
-            appendLog(
-                "🗑️ Product deleted: " +
-                product.name,
-                false
-            );
-
-        }
-
-
-        /* =====================================================
-           RENDER INVENTORY
-        ===================================================== */
-
-        function renderInventory() {
-
-            var table =
-                document.getElementById("inventoryTable");
-
-            var search =
-                document
-                    .getElementById("searchInput")
-                    .value
-                    .toLowerCase()
-                    .trim();
-
-
-            table.innerHTML = "";
-
-
-            var filteredInventory =
-                inventory.filter(function(product) {
-
-                    return product.name
-                        .toLowerCase()
-                        .includes(search);
-
-                });
-
-
-            if (filteredInventory.length === 0) {
-
-                var emptyRow =
-                    document.createElement("tr");
-
-                var emptyCell =
-                    document.createElement("td");
-
-                emptyCell.colSpan = 3;
-                emptyCell.style.textAlign = "center";
-                emptyCell.textContent =
-                    "No products found.";
-
-                emptyRow.appendChild(emptyCell);
-                table.appendChild(emptyRow);
-
-                return;
-            }
-
-
-            filteredInventory.forEach(function(product) {
-
-                var row =
-                    document.createElement("tr");
-
-
-                /* Low stock */
-
-                if (product.quantity <= 5) {
-                    row.classList.add("low-stock");
-                }
-
-
-                /* Product name */
-
-                var nameCell =
-                    document.createElement("td");
-
-                nameCell.textContent =
-                    product.name;
-
-
-                if (product.quantity <= 5) {
-
-                    var badge =
-                        document.createElement("span");
-
-                    badge.className =
-                        "badge-alert";
-
-                    badge.textContent =
-                        "LOW STOCK";
-
-                    nameCell.appendChild(badge);
-                }
-
-
-                /* Quantity */
-
-                var quantityCell =
-                    document.createElement("td");
-
-                quantityCell.textContent =
-                    product.quantity;
-
-
-                /* Actions */
-
-                var actionsCell =
-                    document.createElement("td");
-
-
-                if (
-                    activeUser &&
-                    activeUser.role === "admin"
-                ) {
-
-                    var actionContainer =
-                        document.createElement("div");
-
-                    actionContainer.className =
-                        "action-btns";
-
-
-                    var editButton =
-                        document.createElement("button");
-
-                    editButton.className =
-                        "btn-edit";
-
-                    editButton.type = "button";
-                    editButton.textContent = "Edit";
-
-                    editButton.addEventListener(
-                        "click",
-                        function() {
-                            editProduct(product.id);
-                        }
-                    );
-
-
-                    var deleteButton =
-                        document.createElement("button");
-
-                    deleteButton.className =
-                        "btn-delete";
-
-                    deleteButton.type = "button";
-                    deleteButton.textContent = "Delete";
-
-                    deleteButton.addEventListener(
-                        "click",
-                        function() {
-                            deleteProduct(product.id);
-                        }
-                    );
-
-
-                    actionContainer.appendChild(editButton);
-                    actionContainer.appendChild(deleteButton);
-
-                    actionsCell.appendChild(actionContainer);
-
-                }
-                else {
-
-                    actionsCell.textContent =
-                        "Read Only";
-
-                }
-
-
-                row.appendChild(nameCell);
-                row.appendChild(quantityCell);
-                row.appendChild(actionsCell);
-
-                table.appendChild(row);
-
-            });
-
-        }
-
-
-        /* =====================================================
-           EVENT LISTENERS
-        ===================================================== */
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            function() {
-
-                appendLog(
-                    "⚙️ DOM loaded successfully.",
-                    false
-                );
-
-
-                document
-                    .getElementById("mainBtn")
-                    .addEventListener(
-                        "click",
-                        function() {
-
-                            if (isRegisterMode) {
-                                handleRegister();
-                            }
-                            else {
-                                handleLogin();
-                            }
-
-                        }
-                    );
-
-
-                document
-                    .getElementById("toggleLink")
-                    .addEventListener(
-                        "click",
-                        function() {
-
-                            if (isRegisterMode) {
-                                switchToLogin();
-                            }
-                            else {
-                                switchToRegister();
-                            }
-
-                        }
-                    );
-
-
-                document
-                    .getElementById("logoutBtn")
-                    .addEventListener(
-                        "click",
-                        handleLogout
-                    );
-
-
-                document
-                    .getElementById("addProductBtn")
-                    .addEventListener(
-                        "click",
-                        addProduct
-                    );
-
-
-                document
-                    .getElementById("searchInput")
-                    .addEventListener(
-                        "input",
-                        renderInventory
-                    );
-
-
-                /* Press Enter to login/register */
-
-                document
-                    .getElementById("userPassword")
-                    .addEventListener(
-                        "keydown",
-                        function(event) {
-
-                            if (event.key === "Enter") {
-                                document
-                                    .getElementById("mainBtn")
-                                    .click();
-                            }
-
-                        }
-                    );
-
-
-                renderInventory();
-
-
-                appendLog(
-                    "✅ All event listeners attached successfully.",
-                    false
-                );
-
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
             }
         );
 
-    </script>
+    const time =
+        now.toLocaleTimeString(
+            undefined,
+            {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            }
+        );
 
-</body>
-</html>
+    document.getElementById("currentDate")
+        .textContent = date;
+
+    document.getElementById("currentTime")
+        .textContent = time;
+}
+
+setInterval(updateDateTime, 1000);
+
+
+/* =========================================================
+   ACTIVITY
+========================================================= */
+
+function addActivity(icon, text) {
+
+    activities.unshift({
+
+        icon: icon,
+
+        text: text,
+
+        time: new Date().toISOString()
+
+    });
+
+    activities =
+        activities.slice(0, 30);
+
+    saveActivities();
+
+    renderActivities();
+}
+
+
+function renderActivities() {
+
+    const list =
+        document.getElementById("activityList");
+
+    list.innerHTML = "";
+
+    if (activities.length === 0) {
+
+        list.innerHTML =
+            `<div class="no-alert">
+                No recent activity.
+            </div>`;
+
+        return;
+    }
+
+    activities.slice(0, 10).forEach(function(activity) {
+
+        const div =
+            document.createElement("div");
+
+        div.className = "activity";
+
+        const time =
+            new Date(activity.time)
+                .toLocaleString();
+
+        div.innerHTML = `
+            <div class="activity-icon">
+                ${activity.icon}
+            </div>
+
+            <div>
+                <div class="activity-text">
+                    ${escapeHTML(activity.text)}
+                </div>
+
+                <div class="activity-time">
+                    ${time}
+                </div>
+            </div>
+        `;
+
+        list.appendChild(div);
+
+    });
+}
+
+
+/* =========================================================
+   SECURITY HELPER
+========================================================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   REGISTER / LOGIN
+========================================================= */
+
+function switchToRegister() {
+
+    isRegisterMode = true;
+
+    document.getElementById("authTitle")
+        .textContent = "Create Account";
+
+    document.getElementById("authSubtitle")
+        .textContent = "Register a new system account";
+
+    document.getElementById("mainBtn")
+        .textContent = "Create Account";
+
+    document.getElementById("toggleLink")
+        .textContent = "Already have an account? Sign in";
+
+    document.getElementById("roleGroup")
+        .classList.remove("hidden");
+
+    document.getElementById("userEmail").value = "";
+    document.getElementById("userPassword").value = "";
+
+}
+
+
+function switchToLogin() {
+
+    isRegisterMode = false;
+
+    document.getElementById("authTitle")
+        .textContent = "Inventory Manager";
+
+    document.getElementById("authSubtitle")
+        .textContent = "Sign in to access your dashboard";
+
+    document.getElementById("mainBtn")
+        .textContent = "Sign In";
+
+    document.getElementById("toggleLink")
+        .textContent = "Don't have an account? Register";
+
+    document.getElementById("roleGroup")
+        .classList.add("hidden");
+
+}
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+function handleRegister() {
+
+    const email =
+        document.getElementById("userEmail")
+            .value
+            .toLowerCase()
+            .trim();
+
+    const password =
+        document.getElementById("userPassword")
+            .value;
+
+    const role =
+        document.getElementById("userRole")
+            .value;
+
+    if (!email || !password) {
+
+        showMessage(
+            "authMessage",
+            "Please enter email and password.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (password.length < 6) {
+
+        showMessage(
+            "authMessage",
+            "Password must be at least 6 characters.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!email.includes("@")) {
+
+        showMessage(
+            "authMessage",
+            "Please enter a valid email.",
+            "error"
+        );
+
+        return;
+    }
+
+    const exists =
+        accounts.some(function(account) {
+
+            return account.email === email;
+
+        });
+
+    if (exists) {
+
+        showMessage(
+            "authMessage",
+            "This account already exists.",
+            "error"
+        );
+
+        return;
+    }
+
+    accounts.push({
+
+        email: email,
+
+        pass: password,
+
+        role: role
+
+    });
+
+    saveAccounts();
+
+    showMessage(
+        "authMessage",
+        "Account created successfully.",
+        "success"
+    );
+
+    document.getElementById("userEmail").value = "";
+    document.getElementById("userPassword").value = "";
+
+    setTimeout(
+        switchToLogin,
+        1200
+    );
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+function handleLogin() {
+
+    const email =
+        document.getElementById("userEmail")
+            .value
+            .toLowerCase()
+            .trim();
+
+    const password =
+        document.getElementById("userPassword")
+            .value;
+
+    const user =
+        accounts.find(function(account) {
+
+            return (
+                account.email === email &&
+                account.pass === password
+            );
+
+        });
+
+    if (!user) {
+
+        showMessage(
+            "authMessage",
+            "Invalid email or password.",
+            "error"
+        );
+
+        return;
+    }
+
+    activeUser = user;
+
+    document.getElementById("authScreen")
+        .classList.add("hidden");
+
+    document.getElementById("dashboardScreen")
+        .classList.remove("hidden");
+
+    document.getElementById("sidebarUser")
+        .textContent = activeUser.email;
+
+    document.getElementById("sidebarRole")
+        .textContent =
+        activeUser.role === "admin"
+            ? "Administrator"
+            : "Standard User";
+
+    if (activeUser.role === "admin") {
+
+        document.getElementById("adminControls")
+            .classList.remove("hidden");
+
+    } else {
+
+        document.getElementById("adminControls")
+            .classList.add("hidden");
+
+    }
+
+    addActivity(
+        "🔐",
+        "User signed in: " + activeUser.email
+    );
+
+    updateDashboard();
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function logout() {
+
+    if (activeUser) {
+
+        addActivity(
+            "🚪",
+            "User logged out: " +
+            activeUser.email
+        );
+
+    }
+
+    activeUser = null;
+
+    document.getElementById("dashboardScreen")
+        .classList.add("hidden");
+
+    document.getElementById("authScreen")
+        .classList.remove("hidden");
+
+    document.getElementById("userEmail").value = "";
+    document.getElementById("userPassword").value = "";
+
+}
+
+
+/* =========================================================
+   ADD PRODUCT
+========================================================= */
+
+function addProduct() {
+
+    if (!activeUser ||
+        activeUser.role !== "admin") {
+
+        return;
+    }
+
+    const name =
+        document.getElementById("prodName")
+            .value.trim();
+
+    const sku =
+        document.getElementById("prodSKU")
+            .value.trim();
+
+    const category =
+        document.getElementById("prodCategory")
+            .value;
+
+    const quantity =
+        Number(
+            document.getElementById("prodQty")
+                .value
+        );
+
+    const limit =
+        Number(
+            document.getElementById("prodLimit")
+                .value
+        );
+
+    if (!name) {
+
+        showMessage(
+            "productMessage",
+            "Product name is required.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!sku) {
+
+        showMessage(
+            "productMessage",
+            "SKU is required.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (
+        !Number.isInteger(quantity) ||
+        quantity < 0
+    ) {
+
+        showMessage(
+            "productMessage",
+            "Enter a valid quantity.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (
+        !Number.isInteger(limit) ||
+        limit < 0
+    ) {
+
+        showMessage(
+            "productMessage",
+            "Enter a valid stock limit.",
+            "error"
+        );
+
+        return;
+    }
+
+    const duplicateSKU =
+        inventory.some(function(product) {
+
+            return product.sku.toLowerCase() ===
+                sku.toLowerCase();
+
+        });
+
+    if (duplicateSKU) {
+
+        showMessage(
+            "productMessage",
+            "That SKU already exists.",
+            "error"
+        );
+
+        return;
+    }
+
+    const product = {
+
+        id: Date.now(),
+
+        name: name,
+
+        sku: sku,
+
+        category: category,
+
+        quantity: quantity,
+
+        limit: limit,
+
+        createdAt:
+            new Date().toISOString()
+
+    };
+
+    inventory.push(product);
+
+    saveInventory();
+
+    addActivity(
+        "📦",
+        "Added product: " + name
+    );
+
+    document.getElementById("prodName").value = "";
+    document.getElementById("prodSKU").value = "";
+    document.getElementById("prodQty").value = "";
+
+    document.getElementById("prodLimit").value = "5";
+
+    showMessage(
+        "productMessage",
+        "Product added successfully.",
+        "success"
+    );
+
+    updateDashboard();
+}
+
+
+/* =========================================================
+   EDIT PRODUCT
+========================================================= */
+
+function openEdit(id) {
+
+    if (!activeUser ||
+        activeUser.role !== "admin") {
+
+        return;
+    }
+
+    const product =
+        inventory.find(function(item) {
+
+            return item.id === id;
+
+        });
+
+    if (!product) return;
+
+    editingId = id;
+
+    document.getElementById("editName")
+        .value = product.name;
+
+    document.getElementById("editSKU")
+        .value = product.sku;
+
+    document.getElementById("editCategory")
+        .value = product.category;
+
+    document.getElementById("editQty")
+        .value = product.quantity;
+
+    document.getElementById("editLimit")
+        .value = product.limit;
+
+    document.getElementById("editModal")
+        .classList.add("show");
+}
+
+
+function saveEdit() {
+
+    const product =
+        inventory.find(function(item) {
+
+            return item.id === editingId;
+
+        });
+
+    if (!product) return;
+
+    const name =
+        document.getElementById("editName")
+            .value.trim();
+
+    const sku =
+        document.getElementById("editSKU")
+            .value.trim();
+
+    const category =
+        document.getElementById("editCategory")
+            .value;
+
+    const quantity =
+        Number(
+            document.getElementById("editQty")
+                .value
+        );
+
+    const limit =
+        Number(
+            document.getElementById("editLimit")
+                .value
+        );
+
+    if (!name || !sku) {
+
+        alert("Name and SKU are required.");
+
+        return;
+    }
+
+    if (
+        !Number.isInteger(quantity) ||
+        quantity < 0
+    ) {
+
+        alert("Invalid quantity.");
+
+        return;
+    }
+
+    if (
+        !Number.isInteger(limit) ||
+        limit < 0
+    ) {
+
+        alert("Invalid stock limit.");
+
+        return;
+    }
+
+    const duplicate =
+        inventory.some(function(item) {
+
+            return (
+                item.id !== editingId &&
+                item.sku.toLowerCase() ===
+                sku.toLowerCase()
+            );
+
+        });
+
+    if (duplicate) {
+
+        alert("Another product already uses this SKU.");
+
+        return;
+    }
+
+    product.name = name;
+    product.sku = sku;
+    product.category = category;
+    product.quantity = quantity;
+    product.limit = limit;
+
+    saveInventory();
+
+    addActivity(
+        "✏️",
+        "Updated product: " + name
+    );
+
+    closeModal();
+
+    updateDashboard();
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+function deleteProduct(id) {
+
+    if (!activeUser ||
+        activeUser.role !== "admin") {
+
+        return;
+    }
+
+    const product =
+        inventory.find(function(item) {
+
+            return item.id === id;
+
+        });
+
+    if (!product) return;
+
+    const confirmed =
+        confirm(
+            "Delete " +
+            product.name +
+            "?"
+        );
+
+    if (!confirmed) return;
+
+    inventory =
+        inventory.filter(function(item) {
+
+            return item.id !== id;
+
+        });
+
+    saveInventory();
+
+    addActivity(
+        "🗑️",
+        "Deleted product: " + product.name
+    );
+
+    updateDashboard();
+}
+
+
+/* =========================================================
+   RENDER INVENTORY
+========================================================= */
+
+function renderInventory() {
+
+    const table =
+        document.getElementById("inventoryTable");
+
+    const search =
+        document.getElementById("searchInput")
+            .value
+            .toLowerCase()
+            .trim();
+
+    const category =
+        document.getElementById("categoryFilter")
+            .value;
+
+    table.innerHTML = "";
+
+    let filtered =
+        inventory.filter(function(product) {
+
+            const matchesSearch =
+                product.name
+                    .toLowerCase()
+                    .includes(search) ||
+                product.sku
+                    .toLowerCase()
+                    .includes(search);
+
+            const matchesCategory =
+                category === "all" ||
+                product.category === category;
+
+            return (
+                matchesSearch &&
+                matchesCategory
+            );
+
+        });
+
+    if (filtered.length === 0) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="7"
+                    style="text-align:center;padding:30px;color:var(--muted);">
+                    No products found.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    filtered.forEach(function(product) {
+
+        const row =
+            document.createElement("tr");
+
+        if (product.quantity <= product.limit) {
+
+            row.classList.add("low-stock-row");
+
+        }
+
+        let status;
+        let statusClass;
+
+        if (product.quantity === 0) {
+
+            status = "OUT OF STOCK";
+            statusClass = "badge-danger";
+
+        } else if (
+            product.quantity <= product.limit
+        ) {
+
+            status = "LOW STOCK";
+            statusClass = "badge-warning";
+
+        } else {
+
+            status = "IN STOCK";
+            statusClass = "badge-success";
+
+        }
+
+        const created =
+            new Date(product.createdAt)
+                .toLocaleDateString();
+
+        row.innerHTML = `
+
+            <td>
+                <strong>
+                    ${escapeHTML(product.name)}
+                </strong>
+            </td>
+
+            <td>
+                ${escapeHTML(product.sku)}
+            </td>
+
+            <td>
+                <span class="badge badge-category">
+                    ${escapeHTML(product.category)}
+                </span>
+            </td>
+
+            <td>
+                <strong>
+                    ${product.quantity}
+                </strong>
+            </td>
+
+            <td>
+                <span class="badge ${statusClass}">
+                    ${status}
+                </span>
+            </td>
+
+            <td>
+                ${created}
+            </td>
+
+            <td>
+
+                ${
+                    activeUser &&
+                    activeUser.role === "admin"
+
+                    ? `
+                        <div class="actions">
+
+                            <button
+                                class="small-btn edit-btn"
+                                onclick="openEdit(${product.id})"
+                            >
+                                Edit
+                            </button>
+
+                            <button
+                                class="small-btn delete-btn"
+                                onclick="deleteProduct(${product.id})"
+                            >
+                                Delete
+                            </button>
+
+                        </div>
+                    `
+
+                    : `<span style="color:var(--muted);">
+                        Read Only
+                       </span>`
+                }
+
+            </td>
+
+        `;
+
+        table.appendChild(row);
+
+    });
+}
+
+
+/* =========================================================
+   DASHBOARD STATISTICS
+========================================================= */
+
+function updateStatistics() {
+
+    const totalProducts =
+        inventory.length;
+
+    const totalStock =
+        inventory.reduce(
+            function(total, product) {
+
+                return total + product.quantity;
+
+            },
+            0
+        );
+
+    const lowStock =
+        inventory.filter(function(product) {
+
+            return (
+                product.quantity > 0 &&
+                product.quantity <= product.limit
+            );
+
+        }).length;
+
+    const outOfStock =
+        inventory.filter(function(product) {
+
+            return product.quantity === 0;
+
+        }).length;
+
+    document.getElementById("totalProducts")
+        .textContent = totalProducts;
+
+    document.getElementById("totalStock")
+        .textContent = totalStock;
+
+    document.getElementById("lowStockCount")
+        .textContent = lowStock;
+
+    document.getElementById("outStockCount")
+        .textContent = outOfStock;
+}
