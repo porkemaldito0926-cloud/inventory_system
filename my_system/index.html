@@ -232,12 +232,7 @@
             autocomplete="current-password"
         > <form action="/register-endpoint" method="POST">
         <div class="form-group">
-            <label for="permission-level">Select Permission Level:</label>
-            <select id="permission-level" name="permission">
-                <option value="view_only">Auto-Limited View(User Only)</option>
-                <!-- This option will be restricted -->
-                <option value="full_control" id="full-control-option">Full Control (Admin Only)</option>
-            </select>
+           
             <div id="restriction-msg" class="disabled-note">"</div>
         </div>
 
